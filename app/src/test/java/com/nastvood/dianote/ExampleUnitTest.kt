@@ -1,4 +1,4 @@
-package com.nastvood.diashed
+package com.nastvood.dianote
 
 import org.junit.Test
 

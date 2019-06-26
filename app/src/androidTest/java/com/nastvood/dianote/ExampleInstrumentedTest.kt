@@ -1,4 +1,4 @@
-package com.nastvood.diashed
+package com.nastvood.dianote
 
 import androidx.test.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnit4
