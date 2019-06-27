@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              tools:context=".NoteAdd" android:orientation="vertical">
+    <NumberPicker
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/np_ValueAddNote">
+    </NumberPicker>
+    <Button
+            android:text="Ok"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:id="@+id/btn_okAddNote"/>
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" android:id="@+id/ll">
+    </LinearLayout>
+    <Button
+            android:text="Cancel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:id="@+id/btn_cancelAddNote"/>
+</LinearLayout>

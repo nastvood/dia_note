@@ -1,5 +1,6 @@
 package com.nastvood.dianote
 
+import android.content.DialogInterface
 import android.graphics.Color
 import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
@@ -11,6 +12,9 @@ import android.widget.TextView
 import androidx.core.view.setPadding
 import androidx.room.*
 import android.util.Log
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.DialogFragment
 import kotlinx.android.synthetic.main.activity_main.*
 import java.time.Instant
 import java.time.LocalDateTime
@@ -18,13 +22,6 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-
-enum class NoteType(
-    val value: Byte
-) {
-    RAPID(0),
-    LONG(1)
-}
 
 class Converters {
     @TypeConverter
@@ -54,7 +51,7 @@ class Converters {
 
 @Entity
 data class Note(
-    @PrimaryKey(autoGenerate = true) val uid: Long?,
+    @PrimaryKey(autoGenerate = true) var uid: Long?,
     val type: NoteType,
     val date: LocalDateTime,
     val amount: Byte
@@ -78,7 +75,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun noteDao() : NoteDao
 }
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), DialogAddNote.NoticeDialogListener {
 
     lateinit var db: AppDatabase
     val notesLimit: Int = 100
@@ -91,47 +88,67 @@ class MainActivity : AppCompatActivity() {
         val tl = getTable()
         val padding = 10
         val paddingRow = 5
-        //val now = LocalDateTime.now()
-
-        //vla uid = db.noteDao().insert(Note(null, noteType, now, 8))
+        val timeString = note.date.format(DateTimeFormatter.ofPattern("H:m"));
+        val dt = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(resources.configuration.locales[0])
+        val dateString= note.date.format(dt)
 
         val row = TableRow(this)
         row.setPadding(paddingRow)
+        row.isClickable = true
 
-        val label_type = TextView(this)
-        label_type.setTypeface(null, Typeface.BOLD)
-        label_type.setPadding(padding)
-        label_type.setText(note.type.name)
-        label_type.setBackgroundColor(Color.argb(50, 200, 200, 200))
-        label_type.gravity = Gravity.CENTER_HORIZONTAL
-        row.addView(label_type)
+        row.setOnLongClickListener {
+            Log.v("tag", "%d".format(note.uid))
+            AlertDialog.Builder(this)
+                .setTitle(R.string.delete_question)
+                .setMessage("%s %s %s %d".format(note.type.name, note.date.format(dt), timeString, note.amount))
+                .setPositiveButton(R.string.yes) { _, _ ->
+                    db.noteDao().delete(note)
+                    tl.removeView(row)
+                    Toast.makeText(this, R.string.delete_success, Toast.LENGTH_SHORT).show()
+                }
+                .setNegativeButton(R.string.no, null)
+                .show()
 
-        val label_date = TextView(this)
-        val dt = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(resources.configuration.locales[0])
-        label_date.setText(note.date.format(dt))
-        label_date.setPadding(padding)
-        label_date.gravity = Gravity.CENTER_HORIZONTAL
-        row.addView(label_date)
+            true
+        }
 
-        val label_time = TextView(this)
-        label_time.setText(note.date.format(DateTimeFormatter.ofPattern("H:m")))
-        label_time.setPadding(padding)
-        label_time.gravity = Gravity.CENTER_HORIZONTAL
-        row.addView(label_time)
+        val labelType = TextView(this)
+        labelType.setTypeface(null, Typeface.BOLD)
+        labelType.setPadding(padding)
+        labelType.text = note.type.name
+        labelType.setBackgroundColor(Color.argb(50, 200, 200, 200))
+        labelType.gravity = Gravity.CENTER_HORIZONTAL
+        row.addView(labelType)
+
+        val labelDate = TextView(this)
+        labelDate.text = dateString
+        labelDate.setPadding(padding)
+        labelDate.gravity = Gravity.CENTER_HORIZONTAL
+        row.addView(labelDate)
+
+        val labelTime = TextView(this)
+        labelTime.text = timeString
+        labelTime.setPadding(padding)
+        labelTime.gravity = Gravity.CENTER_HORIZONTAL
+        row.addView(labelTime)
 
 
-        val label_amount = TextView(this)
-        label_amount.setText(note.amount.toString())
-        label_amount.setPadding(padding)
-        label_amount.gravity = Gravity.CENTER_HORIZONTAL
-        label_amount.setTypeface(null, Typeface.BOLD)
-        row.addView(label_amount)
+        val labelAmount = TextView(this)
+        labelAmount.text = note.amount.toString()
+        labelAmount.setPadding(padding)
+        labelAmount.gravity = Gravity.CENTER_HORIZONTAL
+        labelAmount.setTypeface(null, Typeface.BOLD)
+        row.addView(labelAmount)
 
 
         tl.addView(row)
     }
 
-    fun firstFillTable() {
+    private fun addNote(uid:Long, noteType: NoteType, amount: Byte, localDateTime: LocalDateTime = LocalDateTime.now()) {
+        addNote(Note(uid, noteType, localDateTime, amount))
+    }
+
+    private fun firstFillTable() {
         val notes = db.noteDao().lastNotes(notesLimit)
 
         for (note in notes) {
@@ -149,14 +166,27 @@ class MainActivity : AppCompatActivity() {
             .build()
 
         btn_long.setOnClickListener {
-            //addNote(NoteType.LONG)
+            val dialog = DialogAddNote(NoteType.LONG, emptyList())
+            dialog.show(supportFragmentManager, NoteType.LONG.name)
         }
 
         btn_rapid.setOnClickListener {
-            //addNote(NoteType.RAPID)
+            val dialog = DialogAddNote(NoteType.RAPID, listOf(1, 2, 3, 4))
+            dialog.show(supportFragmentManager, NoteType.RAPID.name)
         }
 
         firstFillTable()
+    }
+
+    override fun onDialogOkClick(dialog: DialogAddNote) {
+
+        var note = Note(null, dialog.noteType, LocalDateTime.now(), dialog.value!!)
+        note.uid = db.noteDao().insert(note)
+        addNote(note)
+
+        Toast.makeText(this, R.string.add_success, Toast.LENGTH_SHORT).show()
+
+        Log.v("click", "%d %s uid %d".format(dialog.value, dialog.noteType.name, note.uid))
     }
 
 }
