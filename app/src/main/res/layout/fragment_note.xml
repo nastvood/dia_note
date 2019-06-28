@@ -15,7 +15,7 @@
                 <TableLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent" android:id="@+id/table_layout"
-                        android:stretchColumns="*"/>
+                        android:stretchColumns="0,1,2,3"/>
                 <LinearLayout
                         android:orientation="horizontal"
                         android:layout_width="match_parent"

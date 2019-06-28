@@ -1,10 +1,13 @@
 package com.nastvood.dianote
 
+import android.app.ActionBar
+import android.app.Dialog
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
+import android.text.Layout
 import android.util.Log
 import android.view.Gravity
 import androidx.fragment.app.Fragment
@@ -22,13 +25,14 @@ import java.time.format.FormatStyle
 
 class NoteFragment :
     Fragment(),
-    DialogAddNote.NoticeDialogListener {
+    DialogAddNote.NoticeDialogListener,
+    DialogEditNote.NoticeDialogListener {
 
     private var listener: OnFragmentInteractionListener? = null
     lateinit var table: TableLayout
     val notesLimit: Int = 100
+    val maxCountPreload = 5
     private lateinit var db:AppDatabase
-
 
     fun addNote(note: Note) {
         val padding = 10
@@ -53,6 +57,14 @@ class NoteFragment :
                 }
                 .setNegativeButton(R.string.no, null)
                 .show()
+
+            true
+        }
+
+        row.setOnClickListener {
+            val dialog = DialogEditNote(note)
+            dialog.setTargetFragment(this, 0)
+            dialog.show(fragmentManager!!, NoteType.LONG.name)
 
             true
         }
@@ -85,7 +97,6 @@ class NoteFragment :
         labelAmount.setTypeface(null, Typeface.BOLD)
         row.addView(labelAmount)
 
-
         table.addView(row)
     }
 
@@ -110,6 +121,21 @@ class NoteFragment :
             .build()
     }
 
+    fun preloadNotes(noteType: NoteType): List<Byte> {
+        val settings = this.context!!.getSharedPreferences(resources.getString(R.string.app_name), Context.MODE_PRIVATE)
+        return settings.getString(noteType.name, null)?.split(',')?.map { it.toByte() } ?: emptyList()
+    }
+
+    fun updatePreloadNotes(noteType: NoteType, amount: Byte) {
+        val settings =  this.context!!.getSharedPreferences(resources.getString(R.string.app_name), Context.MODE_PRIVATE)
+        val preload = settings.getString(noteType.name, null)?.split(',')?.map { it.toByte() } ?: emptyList()
+        val newPreload = (listOf(amount) + preload.filter { it != amount }).take(this.maxCountPreload).joinToString(",")
+        settings.edit()!!.apply {
+            putString(noteType.name, newPreload)
+            apply()
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -122,14 +148,14 @@ class NoteFragment :
 
         val btnLong: Button = view.findViewById(R.id.btn_long)
         btnLong.setOnClickListener {
-            val dialog = DialogAddNote(NoteType.LONG, emptyList())
+            val dialog = DialogAddNote(NoteType.LONG, preloadNotes(NoteType.LONG))
             dialog.setTargetFragment(this, 0)
             dialog.show(fragmentManager!!, NoteType.LONG.name)
         }
 
         val btnRapid: Button = view.findViewById(R.id.btn_rapid)
         btnRapid.setOnClickListener {
-            val dialog = DialogAddNote(NoteType.RAPID, listOf(1, 2, 3, 4))
+            val dialog = DialogAddNote(NoteType.RAPID, preloadNotes(NoteType.RAPID))
             dialog.setTargetFragment(this, 0)
             dialog.show(fragmentManager!!, NoteType.RAPID.name)
         }
@@ -166,6 +192,12 @@ class NoteFragment :
         addNote(note)
 
         Toast.makeText(activity!!.applicationContext, R.string.add_success, Toast.LENGTH_SHORT).show()
+
+        updatePreloadNotes(note.type, note.amount)
+    }
+
+    override fun onDialogOkEditClick(dialog: DialogEditNote) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
 

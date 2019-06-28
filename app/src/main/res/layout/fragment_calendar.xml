@@ -10,6 +10,7 @@
             android:layout_height="match_parent">
         <CalendarView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:id="@+id/calendar_notes"/>
+                android:layout_height="wrap_content" android:id="@+id/calendar_notes"
+                android:fadingEdge="horizontal|vertical|none" android:measureAllChildren="true"/>
     </LinearLayout>
 </FrameLayout>
