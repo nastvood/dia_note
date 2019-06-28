@@ -9,6 +9,16 @@
         android:fitsSystemWindows="true"
         tools:openDrawer="start">
 
+    <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" android:id="@+id/fl">
+
+        <fragment
+                android:name="androidx.navigation.fragment.NavHostFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" app:navGraph="@navigation/main_graph" app:defaultNavHost="true"
+                android:id="@+id/nav_host_fragment"/>
+    </FrameLayout>
     <include
             layout="@layout/app_bar_main2"
             android:layout_width="match_parent"

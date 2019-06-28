@@ -1,7 +1,9 @@
 package com.nastvood.dianote
 
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
@@ -15,15 +17,18 @@ import androidx.appcompat.widget.Toolbar
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.setPadding
+import androidx.navigation.NavController
+import androidx.navigation.Navigation
 import androidx.room.Room
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, DialogAddNote.NoticeDialogListener {
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, DialogAddNote.NoticeDialogListener, CalendarFragment.OnFragmentInteractionListener {
 
     lateinit var db: AppDatabase
     val notesLimit: Int = 100
+    lateinit var navController: NavController
 
     fun getTable(): TableLayout {
         return findViewById(R.id.table_layout) as TableLayout
@@ -119,6 +124,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         navView.setNavigationItemSelectedListener(this)
 
+        navController = Navigation.findNavController(this, R.id.nav_host_fragment)
+
         db = Room.databaseBuilder(applicationContext, AppDatabase::class.java, resources.getString(R.string.app_name))
             .allowMainThreadQueries()
             .build()
@@ -155,7 +162,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             }
             R.id.nav_calendar -> {
-
             }
         }
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
@@ -172,5 +178,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         Toast.makeText(this, R.string.add_success, Toast.LENGTH_SHORT).show()
 
         Log.v("click", "%d %s uid %d".format(dialog.value, dialog.noteType.name, note.uid))
+    }
+
+    override fun onFragmentInteraction(uri: Uri) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }
