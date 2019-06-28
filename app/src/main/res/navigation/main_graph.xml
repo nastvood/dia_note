@@ -2,8 +2,10 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
             xmlns:tools="http://schemas.android.com/tools" android:id="@+id/main_graph"
-            app:startDestination="@id/calendarFragment">
+            app:startDestination="@id/noteFragment">
 
     <fragment android:id="@+id/calendarFragment" android:name="com.nastvood.dianote.CalendarFragment"
               android:label="fragment_calendar" tools:layout="@layout/fragment_calendar"/>
+    <fragment android:id="@+id/noteFragment" android:name="com.nastvood.dianote.NoteFragment"
+              android:label="fragment_note" tools:layout="@layout/fragment_note"/>
 </navigation>

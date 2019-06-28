@@ -60,10 +60,10 @@ class DialogAddNote(noteType: NoteType, dafaultVals: List<Byte>) : DialogFragmen
         return AlertDialog.Builder(activity).setView(view).setTitle(this.noteType.name).create()
     }
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         super.onAttach(context)
 
-        mListener = context as NoticeDialogListener
+        mListener = targetFragment as NoticeDialogListener
     }
 
 }
