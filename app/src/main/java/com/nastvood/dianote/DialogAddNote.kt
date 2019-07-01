@@ -9,10 +9,7 @@ import android.widget.LinearLayout
 import android.widget.NumberPicker
 import androidx.fragment.app.DialogFragment
 
-class DialogAddNote(noteType: NoteType, dafaultVals: List<Byte>) : DialogFragment() {
-
-    val noteType: NoteType = noteType
-    val defaultVals: List<Byte> = dafaultVals
+class DialogAddNote(val noteType: NoteType, val defaultVals: List<Byte>) : DialogFragment() {
     var value:Byte? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,7 +27,7 @@ class DialogAddNote(noteType: NoteType, dafaultVals: List<Byte>) : DialogFragmen
 
         val np = view.findViewById(R.id.np_ValueAddNote) as NumberPicker
         np.minValue = 1
-        np.maxValue = 255
+        np.maxValue = Byte.MAX_VALUE.toInt()
 
         val btn_ok = view.findViewById(R.id.btn_okAddNote) as Button
         val btn_cancel = view.findViewById(R.id.btn_cancelAddNote) as Button

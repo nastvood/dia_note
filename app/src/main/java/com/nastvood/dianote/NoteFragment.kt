@@ -1,13 +1,14 @@
 package com.nastvood.dianote
 
-import android.app.ActionBar
-import android.app.Dialog
+import android.app.backup.BackupAgent
+import android.app.backup.BackupManager
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
-import android.text.Layout
+import android.os.Environment
+import android.os.FileUtils
 import android.util.Log
 import android.view.Gravity
 import androidx.fragment.app.Fragment
@@ -16,9 +17,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.get
 import androidx.core.view.setPadding
-import androidx.fragment.app.FragmentTransaction
 import androidx.room.Room
+import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -34,22 +36,34 @@ class NoteFragment :
     val maxCountPreload = 5
     private lateinit var db:AppDatabase
 
+    val LABEL_TYPE = 0
+    val LABEL_DATE = 1
+    val LABEL_TIME = 2
+    val LABEL_AMOUNT = 3
+
+    fun formatTimeString(date:LocalDateTime):String {
+        return date.format(DateTimeFormatter.ofPattern("H:m"));
+    }
+
+    fun formatDate():DateTimeFormatter {
+        return DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(resources.configuration.locales[0])
+    }
+
     fun addNote(note: Note) {
         val padding = 10
         val paddingRow = 5
-        val timeString = note.date.format(DateTimeFormatter.ofPattern("H:m"));
-        val dt = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(resources.configuration.locales[0])
-        val dateString= note.date.format(dt)
+        val timeString = formatTimeString(note.date)
+        val fd = formatDate()
+        val dateString= note.date.format(fd)
 
         val row = TableRow(this.context)
         row.setPadding(paddingRow)
         row.isClickable = true
 
         row.setOnLongClickListener {
-            Log.v("tag", "%d".format(note.uid))
             AlertDialog.Builder(this.context!!)
                 .setTitle(R.string.delete_question)
-                .setMessage("%s %s %s %d".format(note.type.name, note.date.format(dt), timeString, note.amount))
+                .setMessage("%s %s %s %d".format(note.type.name, note.date.format(fd), timeString, note.amount))
                 .setPositiveButton(R.string.yes) { _, _ ->
                     db.noteDao().delete(note)
                     table.removeView(row)
@@ -61,43 +75,52 @@ class NoteFragment :
             true
         }
 
+        val labelType = TextView(this.context)
+        labelType.apply {
+            setTypeface(null, Typeface.BOLD)
+            setPadding(padding)
+            text = note.type.name
+            setBackgroundColor(Color.argb(50, 200, 200, 200))
+            gravity = Gravity.CENTER_HORIZONTAL
+        }
+        row.addView(labelType, LABEL_TYPE)
+
+        val labelDate = TextView(this.context)
+        labelDate.apply {
+            text = dateString
+            setPadding(padding)
+            gravity = Gravity.CENTER_HORIZONTAL
+        }
+        row.addView(labelDate, LABEL_DATE)
+
+        val labelTime = TextView(this.context)
+        labelTime.apply {
+            text = timeString
+            setPadding(padding)
+            gravity = Gravity.CENTER_HORIZONTAL
+        }
+        row.addView(labelTime, LABEL_TIME)
+
+
+        val labelAmount = TextView(this.context)
+        labelAmount.apply {
+            text = note.amount.toString()
+            setPadding(padding)
+            gravity = Gravity.CENTER_HORIZONTAL
+            setTypeface(null, Typeface.BOLD)
+        }
+        row.addView(labelAmount, LABEL_AMOUNT)
+
+        table.addView(row)
+        val childIndex = table.indexOfChild(row)
+
         row.setOnClickListener {
-            val dialog = DialogEditNote(note)
+            val dialog = DialogEditNote(note, childIndex)
             dialog.setTargetFragment(this, 0)
             dialog.show(fragmentManager!!, NoteType.LONG.name)
 
             true
         }
-
-        val labelType = TextView(this.context)
-        labelType.setTypeface(null, Typeface.BOLD)
-        labelType.setPadding(padding)
-        labelType.text = note.type.name
-        labelType.setBackgroundColor(Color.argb(50, 200, 200, 200))
-        labelType.gravity = Gravity.CENTER_HORIZONTAL
-        row.addView(labelType)
-
-        val labelDate = TextView(this.context)
-        labelDate.text = dateString
-        labelDate.setPadding(padding)
-        labelDate.gravity = Gravity.CENTER_HORIZONTAL
-        row.addView(labelDate)
-
-        val labelTime = TextView(this.context)
-        labelTime.text = timeString
-        labelTime.setPadding(padding)
-        labelTime.gravity = Gravity.CENTER_HORIZONTAL
-        row.addView(labelTime)
-
-
-        val labelAmount = TextView(this.context)
-        labelAmount.text = note.amount.toString()
-        labelAmount.setPadding(padding)
-        labelAmount.gravity = Gravity.CENTER_HORIZONTAL
-        labelAmount.setTypeface(null, Typeface.BOLD)
-        row.addView(labelAmount)
-
-        table.addView(row)
     }
 
     private fun addNote(uid:Long, noteType: NoteType, amount: Byte, localDateTime: LocalDateTime = LocalDateTime.now()) {
@@ -119,6 +142,8 @@ class NoteFragment :
         db = Room.databaseBuilder(activity!!.applicationContext, AppDatabase::class.java, resources.getString(R.string.app_name))
             .allowMainThreadQueries()
             .build()
+
+        Log.v("database path", activity!!.getDatabasePath(resources.getString(R.string.app_name)).absolutePath)
     }
 
     fun preloadNotes(noteType: NoteType): List<Byte> {
@@ -196,10 +221,16 @@ class NoteFragment :
         updatePreloadNotes(note.type, note.amount)
     }
 
-    override fun onDialogOkEditClick(dialog: DialogEditNote) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun onDialogOkEditClick(note: Note, rowIndex:Int) {
+        db.noteDao().update(note)
 
+        val row = table.getChildAt(rowIndex) as TableRow
+
+        (row.get(LABEL_TYPE) as TextView).setText(note.type.name)
+        (row.get(LABEL_DATE) as TextView).setText(formatTimeString(note.date))
+        (row.get(LABEL_DATE) as TextView).setText(note.date.format(formatDate()))
+        (row.get(LABEL_AMOUNT) as TextView).setText(note.amount.toString())
+    }
 
     companion object {
         @JvmStatic

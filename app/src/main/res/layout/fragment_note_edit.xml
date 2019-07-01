@@ -12,11 +12,16 @@
             <Spinner
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" android:id="@+id/sp_typeEditNote" android:layout_weight="1"/>
+            <NumberPicker
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/np_AmountEditNote" android:layout_weight="1">
+            </NumberPicker>
             <DatePicker android:layout_width="match_parent" android:layout_height="wrap_content"
                         android:calendarViewShown="false" android:datePickerMode="spinner"
-                        android:id="@+id/dp_edit_note"></DatePicker>
+                        android:id="@+id/dp_EditNote"></DatePicker>
             <TimePicker android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:id="@+id/tp_edit_note" android:timePickerMode="spinner"
+                        android:id="@+id/tp_EditNote" android:timePickerMode="spinner"
                         android:headerAmPmTextAppearance="@style/TextAppearance.AppCompat.Display1"></TimePicker>
             <LinearLayout
                     android:orientation="horizontal"
