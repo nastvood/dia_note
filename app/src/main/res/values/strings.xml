@@ -17,5 +17,6 @@
     <string name="menu_calendar">Calendar</string>
     <string name="menu_notes">Notes</string>
     <string name="mail">nastvood@gmail.com</string>
+    <string name="settings">Settings</string>
 
 </resources>

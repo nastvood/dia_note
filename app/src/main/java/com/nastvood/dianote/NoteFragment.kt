@@ -1,14 +1,10 @@
 package com.nastvood.dianote
 
-import android.app.backup.BackupAgent
-import android.app.backup.BackupManager
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
-import android.os.FileUtils
 import android.util.Log
 import android.view.Gravity
 import androidx.fragment.app.Fragment
@@ -20,7 +16,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.view.get
 import androidx.core.view.setPadding
 import androidx.room.Room
-import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -32,17 +27,18 @@ class NoteFragment :
 
     private var listener: OnFragmentInteractionListener? = null
     lateinit var table: TableLayout
+    lateinit var sv: ScrollView
     val notesLimit: Int = 100
     val maxCountPreload = 5
     private lateinit var db:AppDatabase
 
-    val LABEL_TYPE = 0
-    val LABEL_DATE = 1
-    val LABEL_TIME = 2
-    val LABEL_AMOUNT = 3
+    val label_type = 0
+    val label_date = 1
+    val label_time = 2
+    val label_amount = 3
 
     fun formatTimeString(date:LocalDateTime):String {
-        return date.format(DateTimeFormatter.ofPattern("H:m"));
+        return date.format(DateTimeFormatter.ofPattern("HH:mm"));
     }
 
     fun formatDate():DateTimeFormatter {
@@ -83,7 +79,7 @@ class NoteFragment :
             setBackgroundColor(Color.argb(50, 200, 200, 200))
             gravity = Gravity.CENTER_HORIZONTAL
         }
-        row.addView(labelType, LABEL_TYPE)
+        row.addView(labelType, label_type)
 
         val labelDate = TextView(this.context)
         labelDate.apply {
@@ -91,7 +87,7 @@ class NoteFragment :
             setPadding(padding)
             gravity = Gravity.CENTER_HORIZONTAL
         }
-        row.addView(labelDate, LABEL_DATE)
+        row.addView(labelDate, label_date)
 
         val labelTime = TextView(this.context)
         labelTime.apply {
@@ -99,7 +95,7 @@ class NoteFragment :
             setPadding(padding)
             gravity = Gravity.CENTER_HORIZONTAL
         }
-        row.addView(labelTime, LABEL_TIME)
+        row.addView(labelTime, label_time)
 
 
         val labelAmount = TextView(this.context)
@@ -109,7 +105,7 @@ class NoteFragment :
             gravity = Gravity.CENTER_HORIZONTAL
             setTypeface(null, Typeface.BOLD)
         }
-        row.addView(labelAmount, LABEL_AMOUNT)
+        row.addView(labelAmount, label_amount)
 
         table.addView(row)
         val childIndex = table.indexOfChild(row)
@@ -168,6 +164,7 @@ class NoteFragment :
         val view = inflater.inflate(R.layout.fragment_note, container, false)
 
         table = view.findViewById(R.id.table_layout)
+        sv = view.findViewById(R.id.sv_fragmen_note)
 
         firstFillTable()
 
@@ -183,6 +180,10 @@ class NoteFragment :
             val dialog = DialogAddNote(NoteType.RAPID, preloadNotes(NoteType.RAPID))
             dialog.setTargetFragment(this, 0)
             dialog.show(fragmentManager!!, NoteType.RAPID.name)
+        }
+
+        view.post {
+            sv.fullScroll(ScrollView.FOCUS_DOWN)
         }
 
         return view
@@ -226,10 +227,10 @@ class NoteFragment :
 
         val row = table.getChildAt(rowIndex) as TableRow
 
-        (row.get(LABEL_TYPE) as TextView).setText(note.type.name)
-        (row.get(LABEL_DATE) as TextView).setText(formatTimeString(note.date))
-        (row.get(LABEL_DATE) as TextView).setText(note.date.format(formatDate()))
-        (row.get(LABEL_AMOUNT) as TextView).setText(note.amount.toString())
+        (row.get(label_type) as TextView).setText(note.type.name)
+        (row.get(label_date) as TextView).setText(note.date.format(formatDate()))
+        (row.get(label_time) as TextView).setText(formatTimeString(note.date))
+        (row.get(label_amount) as TextView).setText(note.amount.toString())
     }
 
     companion object {

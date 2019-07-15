@@ -8,9 +8,19 @@
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-        <CalendarView
+        <Button
+                android:text="@string/settings"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:id="@+id/calendar_notes"
-                android:fadingEdge="horizontal|vertical|none" android:measureAllChildren="true"/>
+                android:layout_height="wrap_content" android:id="@+id/btn_calendar_notes"/>
+        <DatePicker android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:id="@+id/dp_calendar_notes" android:calendarViewShown="false"
+                    android:datePickerMode="spinner"
+                    android:inputType="date"
+                    android:visibility="gone"></DatePicker>
+        <com.androidplot.xy.XYPlot
+                style="@style/APDefacto.Dark"
+                android:id="@+id/plot_calendar_notes"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" android:minWidth="500dp"/>
     </LinearLayout>
 </FrameLayout>

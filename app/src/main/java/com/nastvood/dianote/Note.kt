@@ -11,3 +11,11 @@ data class Note(
     val date: LocalDateTime,
     val amount: Byte
 )
+
+data class NoteDay(
+    val type: NoteType,
+    val day: Int,
+    val month: Int,
+    val year: Int,
+    val sum: Int
+)

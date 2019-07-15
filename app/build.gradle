@@ -47,6 +47,8 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment-ktx:2.0.0'
     implementation 'androidx.navigation:navigation-ui-ktx:2.0.0'
 
+    implementation "com.androidplot:androidplot-core:1.5.6"
+
     // optional - RxJava support for Room
     //implementation "androidx.room:room-rxjava2:$room_version"
 
