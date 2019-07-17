@@ -18,5 +18,8 @@
     <string name="menu_notes">Notes</string>
     <string name="mail">nastvood@gmail.com</string>
     <string name="settings">Settings</string>
+    <string name="rapid_type">RAPID</string>
+    <string name="long_type">LONG</string>
+    <string name="long_rapid_type">LONG+RAPID</string>
 
 </resources>

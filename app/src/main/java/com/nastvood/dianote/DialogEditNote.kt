@@ -7,14 +7,17 @@ import android.os.Bundle
 import android.view.View
 import android.widget.*
 import androidx.fragment.app.DialogFragment
-import java.text.DateFormat
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
-class DialogEditNote(val note:Note, val rowIndex:Int) : DialogFragment() {
+private const val ARG_NOTE = "note"
+private const val ARG_ROW_INDEX = "rowIndex"
+
+class DialogEditNote() : DialogFragment() {
 
     var value:Byte? = null
     val types = NoteType.values().map { it.name }
+    lateinit var note:Note
+    var rowIndex:Int = 0
     lateinit var sp:Spinner
     lateinit var dp:DatePicker
     lateinit var tp:TimePicker
@@ -22,6 +25,11 @@ class DialogEditNote(val note:Note, val rowIndex:Int) : DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        arguments?.let {
+            note = it.getSerializable(ARG_NOTE) as Note
+            rowIndex = it.getInt(ARG_ROW_INDEX)
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -87,6 +95,18 @@ class DialogEditNote(val note:Note, val rowIndex:Int) : DialogFragment() {
         super.onAttach(context)
 
         mListener = targetFragment as NoticeDialogListener
+    }
+
+    companion object {
+        @JvmStatic
+        fun newInstance(note:Note, rowIndex:Int) =
+            DialogEditNote().apply {
+                arguments = Bundle().apply {
+                    putSerializable(ARG_NOTE, note)
+                    putInt(ARG_ROW_INDEX, rowIndex)
+                }
+            }
+
     }
 
 }

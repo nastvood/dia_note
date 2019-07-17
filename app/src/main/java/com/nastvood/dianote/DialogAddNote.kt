@@ -9,11 +9,21 @@ import android.widget.LinearLayout
 import android.widget.NumberPicker
 import androidx.fragment.app.DialogFragment
 
-class DialogAddNote(val noteType: NoteType, val defaultVals: List<Byte>) : DialogFragment() {
+private const val ARG_NOTE_TYPE = "noteType"
+private const val ARG_DEFAULT_VALS = "defaultVals"
+
+class DialogAddNote() : DialogFragment() {
     var value:Byte? = null
+    lateinit var noteType:NoteType
+    lateinit var defaultVals:ByteArray
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        arguments?.let {
+            noteType = NoteType.valueOf(it.getString(ARG_NOTE_TYPE)!!)
+            defaultVals = it.getByteArray(ARG_DEFAULT_VALS)!!
+        }
     }
 
     interface NoticeDialogListener {
@@ -63,4 +73,15 @@ class DialogAddNote(val noteType: NoteType, val defaultVals: List<Byte>) : Dialo
         mListener = targetFragment as NoticeDialogListener
     }
 
+    companion object {
+        @JvmStatic
+        fun newInstance(noteType: NoteType, defaultVals: ByteArray) =
+            DialogAddNote().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_NOTE_TYPE, noteType.name)
+                    putByteArray(ARG_DEFAULT_VALS, defaultVals)
+
+                }
+            }
+    }
 }

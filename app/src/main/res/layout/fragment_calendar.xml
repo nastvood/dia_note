@@ -12,15 +12,36 @@
                 android:text="@string/settings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:id="@+id/btn_calendar_notes"/>
-        <DatePicker android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:id="@+id/dp_calendar_notes" android:calendarViewShown="false"
-                    android:datePickerMode="spinner"
-                    android:inputType="date"
-                    android:visibility="gone"></DatePicker>
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:id="@+id/ll_calendar_notes" android:visibility="gone">
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:visibility="visible">
+                <TextView
+                        android:text="LONG + RAPID"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:id="@+id/tv_sb_calendar_notes" android:layout_weight="0.5"/>
+                <SeekBar
+                        style="@style/Widget.AppCompat.SeekBar.Discrete"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:max="2"
+                        android:progress="0"
+                        android:id="@+id/sb_calendar_notes" android:layout_weight="2"/>
+            </LinearLayout>
+            <DatePicker android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:id="@+id/dp_calendar_notes" android:calendarViewShown="false"
+                        android:datePickerMode="spinner"
+                        android:inputType="date"
+                        android:visibility="visible"></DatePicker>
+        </LinearLayout>
         <com.androidplot.xy.XYPlot
                 style="@style/APDefacto.Dark"
                 android:id="@+id/plot_calendar_notes"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" android:minWidth="500dp"/>
+                android:layout_height="match_parent" android:minWidth="500dp" android:visibility="visible"/>
     </LinearLayout>
 </FrameLayout>

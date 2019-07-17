@@ -20,6 +20,11 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
+private const val LABEL_TYPE = 0
+private const val LABEL_DATE = 1
+private const val LABEL_TIME = 2
+private const val LABEL_AMOUNT = 3
+
 class NoteFragment :
     Fragment(),
     DialogAddNote.NoticeDialogListener,
@@ -31,11 +36,6 @@ class NoteFragment :
     val notesLimit: Int = 100
     val maxCountPreload = 5
     private lateinit var db:AppDatabase
-
-    val label_type = 0
-    val label_date = 1
-    val label_time = 2
-    val label_amount = 3
 
     fun formatTimeString(date:LocalDateTime):String {
         return date.format(DateTimeFormatter.ofPattern("HH:mm"));
@@ -79,7 +79,7 @@ class NoteFragment :
             setBackgroundColor(Color.argb(50, 200, 200, 200))
             gravity = Gravity.CENTER_HORIZONTAL
         }
-        row.addView(labelType, label_type)
+        row.addView(labelType, LABEL_TYPE)
 
         val labelDate = TextView(this.context)
         labelDate.apply {
@@ -87,7 +87,7 @@ class NoteFragment :
             setPadding(padding)
             gravity = Gravity.CENTER_HORIZONTAL
         }
-        row.addView(labelDate, label_date)
+        row.addView(labelDate, LABEL_DATE)
 
         val labelTime = TextView(this.context)
         labelTime.apply {
@@ -95,7 +95,7 @@ class NoteFragment :
             setPadding(padding)
             gravity = Gravity.CENTER_HORIZONTAL
         }
-        row.addView(labelTime, label_time)
+        row.addView(labelTime, LABEL_TIME)
 
 
         val labelAmount = TextView(this.context)
@@ -105,17 +105,15 @@ class NoteFragment :
             gravity = Gravity.CENTER_HORIZONTAL
             setTypeface(null, Typeface.BOLD)
         }
-        row.addView(labelAmount, label_amount)
+        row.addView(labelAmount, LABEL_AMOUNT)
 
         table.addView(row)
         val childIndex = table.indexOfChild(row)
 
         row.setOnClickListener {
-            val dialog = DialogEditNote(note, childIndex)
+            val dialog = DialogEditNote.newInstance(note, childIndex)
             dialog.setTargetFragment(this, 0)
             dialog.show(fragmentManager!!, NoteType.LONG.name)
-
-            true
         }
     }
 
@@ -142,9 +140,9 @@ class NoteFragment :
         Log.v("database path", activity!!.getDatabasePath(resources.getString(R.string.app_name)).absolutePath)
     }
 
-    fun preloadNotes(noteType: NoteType): List<Byte> {
+    fun preloadNotes(noteType: NoteType): ByteArray {
         val settings = this.context!!.getSharedPreferences(resources.getString(R.string.app_name), Context.MODE_PRIVATE)
-        return settings.getString(noteType.name, null)?.split(',')?.map { it.toByte() } ?: emptyList()
+        return settings.getString(noteType.name, null)?.split(',')?.map { it.toByte() } ?.toByteArray()?: ByteArray(0)
     }
 
     fun updatePreloadNotes(noteType: NoteType, amount: Byte) {
@@ -170,14 +168,14 @@ class NoteFragment :
 
         val btnLong: Button = view.findViewById(R.id.btn_long)
         btnLong.setOnClickListener {
-            val dialog = DialogAddNote(NoteType.LONG, preloadNotes(NoteType.LONG))
+            val dialog = DialogAddNote.newInstance(NoteType.LONG, preloadNotes(NoteType.LONG))
             dialog.setTargetFragment(this, 0)
             dialog.show(fragmentManager!!, NoteType.LONG.name)
         }
 
         val btnRapid: Button = view.findViewById(R.id.btn_rapid)
         btnRapid.setOnClickListener {
-            val dialog = DialogAddNote(NoteType.RAPID, preloadNotes(NoteType.RAPID))
+            val dialog = DialogAddNote.newInstance(NoteType.RAPID, preloadNotes(NoteType.RAPID))
             dialog.setTargetFragment(this, 0)
             dialog.show(fragmentManager!!, NoteType.RAPID.name)
         }
@@ -227,10 +225,10 @@ class NoteFragment :
 
         val row = table.getChildAt(rowIndex) as TableRow
 
-        (row.get(label_type) as TextView).setText(note.type.name)
-        (row.get(label_date) as TextView).setText(note.date.format(formatDate()))
-        (row.get(label_time) as TextView).setText(formatTimeString(note.date))
-        (row.get(label_amount) as TextView).setText(note.amount.toString())
+        (row.get(LABEL_TYPE) as TextView).setText(note.type.name)
+        (row.get(LABEL_DATE) as TextView).setText(note.date.format(formatDate()))
+        (row.get(LABEL_TIME) as TextView).setText(formatTimeString(note.date))
+        (row.get(LABEL_AMOUNT) as TextView).setText(note.amount.toString())
     }
 
     companion object {
