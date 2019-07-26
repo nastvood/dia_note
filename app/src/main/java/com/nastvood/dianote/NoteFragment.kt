@@ -115,6 +115,10 @@ class NoteFragment :
             dialog.setTargetFragment(this, 0)
             dialog.show(fragmentManager!!, NoteType.LONG.name)
         }
+
+        this.view?.post {
+            sv.fullScroll(ScrollView.FOCUS_DOWN)
+        }
     }
 
     private fun addNote(uid:Long, noteType: NoteType, amount: Byte, localDateTime: LocalDateTime = LocalDateTime.now()) {
@@ -133,9 +137,7 @@ class NoteFragment :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        db = Room.databaseBuilder(activity!!.applicationContext, AppDatabase::class.java, resources.getString(R.string.app_name))
-            .allowMainThreadQueries()
-            .build()
+        db =  AppDatabase.getInstance(activity!!.applicationContext)!!
 
         Log.v("database path", activity!!.getDatabasePath(resources.getString(R.string.app_name)).absolutePath)
     }

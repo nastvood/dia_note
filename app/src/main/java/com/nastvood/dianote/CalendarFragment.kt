@@ -11,7 +11,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.room.Room
 import com.androidplot.xy.*
 import java.lang.Exception
 import java.text.FieldPosition
@@ -35,9 +34,7 @@ class CalendarFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        db = Room.databaseBuilder(activity!!.applicationContext, AppDatabase::class.java, resources.getString(R.string.app_name))
-            .allowMainThreadQueries()
-            .build()
+        db = AppDatabase.getInstance(activity!!.applicationContext)!!
     }
 
     fun showedType():Int {

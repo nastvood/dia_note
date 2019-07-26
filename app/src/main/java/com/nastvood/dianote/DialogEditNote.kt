@@ -44,7 +44,7 @@ class DialogEditNote() : DialogFragment() {
 
     fun getUpdatedNote():Note {
         val typeName = types[sp.selectedItemId.toInt()]
-        val date = LocalDateTime.of(dp.year, dp.month, dp.dayOfMonth, tp.hour, tp.minute)
+        val date = LocalDateTime.of(dp.year, dp.month + 1, dp.dayOfMonth, tp.hour, tp.minute)
         return Note(note.uid, NoteType.valueOf(typeName), date, np.value.toByte())
     }
 

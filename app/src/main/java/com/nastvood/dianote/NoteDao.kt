@@ -4,7 +4,7 @@ import androidx.room.*
 
 @Dao
 interface NoteDao {
-    @Query("SELECT * FROM note LIMIT :limit")
+    @Query("SELECT * FROM (SELECT * FROM note ORDER BY date DESC LIMIT :limit) ORDER BY date ASC")
     fun lastNotes(limit: Int):List<Note>
 
     @Query("SELECT type, day, month, year, SUM(amount) as sum FROM\n" +

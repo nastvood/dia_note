@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import androidx.room.Room
 
 class MainActivity :
     AppCompatActivity(),
@@ -21,7 +22,12 @@ class MainActivity :
     lateinit var navController: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Room.databaseBuilder(applicationContext, AppDatabase::class.java, resources.getString(R.string.app_name))
+            .addMigrations(MIGRATION_1_2)
+            .build()
+
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_main)
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -38,6 +44,7 @@ class MainActivity :
         navView.setNavigationItemSelectedListener(this)
 
         navController = Navigation.findNavController(this, R.id.nav_host_fragment)
+
     }
 
     override fun onBackPressed() {
