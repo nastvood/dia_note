@@ -15,7 +15,6 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.get
 import androidx.core.view.setPadding
-import androidx.room.Room
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -33,19 +32,22 @@ class NoteFragment :
     private var listener: OnFragmentInteractionListener? = null
     lateinit var table: TableLayout
     lateinit var sv: ScrollView
-    val notesLimit: Int = 100
-    val maxCountPreload = 5
+    private val notesLimit: Int = 100
+    private val maxCountPreload = 5
     private lateinit var db:AppDatabase
 
-    fun formatTimeString(date:LocalDateTime):String {
+    private val RAPID_MIN_VALUE = 3
+    private val LONG_MIN_VALUE = 10
+
+    private fun formatTimeString(date:LocalDateTime):String {
         return date.format(DateTimeFormatter.ofPattern("HH:mm"));
     }
 
-    fun formatDate():DateTimeFormatter {
+    private fun formatDate():DateTimeFormatter {
         return DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(resources.configuration.locales[0])
     }
 
-    fun addNote(note: Note) {
+    private fun addNote(note: Note) {
         val padding = 10
         val paddingRow = 5
         val timeString = formatTimeString(note.date)
@@ -121,10 +123,6 @@ class NoteFragment :
         }
     }
 
-    private fun addNote(uid:Long, noteType: NoteType, amount: Byte, localDateTime: LocalDateTime = LocalDateTime.now()) {
-        addNote(Note(uid, noteType, localDateTime, amount))
-    }
-
     private fun firstFillTable() {
         val notes = db.noteDao().lastNotes(notesLimit)
 
@@ -142,18 +140,36 @@ class NoteFragment :
         Log.v("database path", activity!!.getDatabasePath(resources.getString(R.string.app_name)).absolutePath)
     }
 
-    fun preloadNotes(noteType: NoteType): ByteArray {
-        val settings = this.context!!.getSharedPreferences(resources.getString(R.string.app_name), Context.MODE_PRIVATE)
-        return settings.getString(noteType.name, null)?.split(',')?.map { it.toByte() } ?.toByteArray()?: ByteArray(0)
+    private fun isSuitedPreloadNote(noteType: NoteType, amount: Byte): Boolean {
+        return ((amount >= RAPID_MIN_VALUE && noteType == NoteType.RAPID) ||
+            (amount >= LONG_MIN_VALUE && noteType == NoteType.LONG))
     }
 
-    fun updatePreloadNotes(noteType: NoteType, amount: Byte) {
-        val settings =  this.context!!.getSharedPreferences(resources.getString(R.string.app_name), Context.MODE_PRIVATE)
-        val preload = settings.getString(noteType.name, null)?.split(',')?.map { it.toByte() } ?: emptyList()
-        val newPreload = (listOf(amount) + preload.filter { it != amount }).take(this.maxCountPreload).joinToString(",")
-        settings.edit()!!.apply {
-            putString(noteType.name, newPreload)
-            apply()
+    private fun preloadNotes(noteType: NoteType): ByteArray {
+        val settings = this.context!!.getSharedPreferences(resources.getString(R.string.app_name), Context.MODE_PRIVATE)
+        return settings.getString(noteType.name, null)
+            ?.split(',')
+            ?.map { it.toByte() }
+            ?.filter { isSuitedPreloadNote(noteType, it) }
+            ?.toByteArray()
+            ?: ByteArray(0)
+    }
+
+    private fun updatePreloadNotes(noteType: NoteType, amount: Byte) {
+        if (isSuitedPreloadNote(noteType, amount)) {
+            val settings = this.context!!.getSharedPreferences(
+                resources.getString(R.string.app_name),
+                Context.MODE_PRIVATE
+            )
+            val preload = settings.getString(noteType.name, null)?.split(',')?.map { it.toByte() }
+                ?: emptyList()
+            val newPreload =
+                (listOf(amount) + preload.filter { it != amount }).take(this.maxCountPreload)
+                    .joinToString(",")
+            settings.edit()!!.apply {
+                putString(noteType.name, newPreload)
+                apply()
+            }
         }
     }
 
@@ -198,7 +214,7 @@ class NoteFragment :
         if (context is OnFragmentInteractionListener) {
             listener = context
         } else {
-            throw RuntimeException(context.toString() + " must implement OnFragmentInteractionListener")
+            throw RuntimeException("$context must implement OnFragmentInteractionListener")
         }
     }
 
@@ -212,7 +228,6 @@ class NoteFragment :
     }
 
     override fun onDialogOkClick(dialog: DialogAddNote) {
-
         var note = Note(null, dialog.noteType, LocalDateTime.now(), dialog.value!!)
         note.uid = db.noteDao().insert(note)
         addNote(note)
@@ -231,12 +246,5 @@ class NoteFragment :
         (row.get(LABEL_DATE) as TextView).setText(note.date.format(formatDate()))
         (row.get(LABEL_TIME) as TextView).setText(formatTimeString(note.date))
         (row.get(LABEL_AMOUNT) as TextView).setText(note.amount.toString())
-    }
-
-    companion object {
-        @JvmStatic
-        fun newInstance() =
-            NoteFragment().apply {
-            }
     }
 }
